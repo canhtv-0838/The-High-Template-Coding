@@ -1,17 +1,24 @@
 package com.sample.samplebase.data.remote
 
 import com.sample.samplebase.BuildConfig
+import com.sample.samplebase.data.model.TestModel
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
 import java.util.concurrent.TimeUnit
 
 interface ApiService {
+    @GET("get_all_shared_post.php")
+    fun getAllSharedPostAsync(): Call<TestModel>
+
     companion object {
         private const val TIMEOUT = 10L
-        private const val BASE_URL = "https://api.themoviedb.org/3/"
+        private const val BASE_URL = "https://trvcanh197.000webhostapp.com/moviedb/"
 
         fun createHeaderInterceptor(): Interceptor =
             Interceptor { chain ->
@@ -29,23 +36,21 @@ interface ApiService {
             }
 
         fun createOkHttpClient(
-            logging: Interceptor,
-            header: Interceptor
+
         ): OkHttpClient =
             OkHttpClient.Builder()
                 .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(TIMEOUT, TimeUnit.SECONDS)
-                .addInterceptor(header)
-                .addInterceptor(logging)
+                .addInterceptor(createHeaderInterceptor())
+                .addInterceptor(createLoggingInterceptor())
                 .build()
 
-        fun createRetrofit(okHttpClient: OkHttpClient) {
+        fun createRetrofit(): Retrofit =
             Retrofit.Builder()
                 .baseUrl(BASE_URL)
-                .client(okHttpClient)
+                .client(createOkHttpClient())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
-        }
 
     }
 }
